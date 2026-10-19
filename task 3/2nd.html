@@ -1,0 +1,2678 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>My Memory Gallery</title>
+
+    <!-- EXIF Library -->
+    <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
+
+
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f7fa;
+            color: #222;
+            transition: 0.3s;
+        }
+
+
+
+        header {
+            text-align: center;
+            padding: 40px 20px 25px;
+        }
+
+        header h1 {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            color: #666;
+            font-size: 17px;
+        }
+
+
+        .top-section {
+            width: 90%;
+            max-width: 1200px;
+            margin: auto;
+
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+
+        .search {
+            flex: 1;
+
+            padding: 13px 18px;
+
+            border: 1px solid #ddd;
+
+            border-radius: 30px;
+
+            outline: none;
+
+            font-size: 15px;
+        }
+
+
+        .dark-btn {
+            border: none;
+
+            padding: 13px 18px;
+
+            border-radius: 30px;
+
+            background: #222;
+
+            color: white;
+
+            cursor: pointer;
+        }
+
+
+        .categories {
+            width: 95%;
+            max-width: 1200px;
+
+            margin: 25px auto 15px;
+
+            text-align: center;
+        }
+
+
+        .filter-btn {
+            border: none;
+
+            background: white;
+
+            padding: 10px 17px;
+
+            margin: 5px;
+
+            border-radius: 25px;
+
+            cursor: pointer;
+
+            box-shadow: 0 3px 10px rgba(0,0,0,.1);
+
+            transition: .3s;
+        }
+
+
+        .filter-btn:hover {
+            background: #222;
+            color: white;
+        }
+
+
+        .filter-btn.active {
+            background: #222;
+            color: white;
+        }
+
+
+        .extra-buttons {
+            text-align: center;
+            margin: 15px auto 30px;
+        }
+
+
+        .extra-btn {
+            border: none;
+
+            background: #222;
+
+            color: white;
+
+            padding: 11px 18px;
+
+            margin: 5px;
+
+            border-radius: 25px;
+
+            cursor: pointer;
+
+            transition: .3s;
+        }
+
+
+        .extra-btn:hover {
+            transform: scale(1.05);
+        }
+
+
+        .gallery {
+            width: 90%;
+            max-width: 1200px;
+
+            margin: auto;
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(4, 1fr);
+
+            gap: 20px;
+        }
+
+
+        .gallery-item {
+            position: relative;
+
+            height: 260px;
+
+            overflow: hidden;
+
+            border-radius: 15px;
+
+            background: white;
+
+            box-shadow:
+                0 5px 15px rgba(0,0,0,.12);
+
+            transition: .3s;
+
+            cursor: pointer;
+        }
+
+
+        .gallery-item:hover {
+            transform: translateY(-6px);
+
+            box-shadow:
+                0 10px 25px rgba(0,0,0,.2);
+        }
+
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+
+            object-fit: cover;
+
+            display: block;
+
+            transition: .5s;
+        }
+
+
+        .gallery-item:hover img {
+            transform: scale(1.08);
+
+            filter: brightness(.8);
+        }
+
+
+        .image-title {
+            position: absolute;
+
+            left: 0;
+            bottom: 0;
+
+            width: 100%;
+
+            padding: 16px;
+
+            color: white;
+
+            background:
+                linear-gradient(
+                    transparent,
+                    rgba(0,0,0,.9)
+                );
+
+            font-size: 15px;
+        }
+
+
+        .image-title small {
+            display: block;
+
+            margin-top: 7px;
+
+            font-size: 12px;
+
+            opacity: .9;
+        }
+
+
+        .favorite {
+            position: absolute;
+
+            z-index: 10;
+
+            right: 10px;
+            top: 10px;
+
+            width: 40px;
+            height: 40px;
+
+            border: none;
+
+            border-radius: 50%;
+
+            background: white;
+
+            font-size: 22px;
+
+            cursor: pointer;
+        }
+
+
+        .favorite.active {
+            color: red;
+        }
+
+
+        .lightbox {
+            display: none;
+
+            position: fixed;
+
+            z-index: 1000;
+
+            inset: 0;
+
+            background: rgba(0,0,0,.93);
+
+            justify-content: center;
+
+            align-items: center;
+        }
+
+
+        #lightbox-img {
+            max-width: 80%;
+            max-height: 70%;
+
+            border-radius: 12px;
+
+            box-shadow:
+                0 0 35px rgba(255,255,255,.2);
+        }
+
+
+        .close {
+            position: absolute;
+
+            top: 18px;
+            right: 30px;
+
+            color: white;
+
+            font-size: 45px;
+
+            cursor: pointer;
+
+            z-index: 10;
+        }
+
+
+        .prev,
+        .next {
+            position: absolute;
+
+            top: 50%;
+
+            transform: translateY(-50%);
+
+            width: 55px;
+            height: 55px;
+
+            border: none;
+
+            border-radius: 50%;
+
+            background:
+                rgba(255,255,255,.2);
+
+            color: white;
+
+            font-size: 30px;
+
+            cursor: pointer;
+
+            z-index: 10;
+        }
+
+
+        .prev {
+            left: 25px;
+        }
+
+
+        .next {
+            right: 25px;
+        }
+
+
+        .prev:hover,
+        .next:hover {
+            background: white;
+            color: black;
+        }
+
+
+        .memory {
+            position: absolute;
+
+            bottom: 25px;
+
+            left: 50%;
+
+            transform: translateX(-50%);
+
+            width: 85%;
+
+            max-width: 650px;
+
+            text-align: center;
+
+            color: white;
+        }
+
+
+        .memory h2 {
+            margin-bottom: 8px;
+        }
+
+
+        .memory p {
+            color: #ddd;
+
+            line-height: 1.5;
+
+            font-size: 14px;
+        }
+
+
+        .photo-date {
+            margin-top: 12px;
+
+            color: white;
+
+            font-size: 14px;
+        }
+
+
+        .pin-modal {
+            display: none;
+
+            position: fixed;
+
+            z-index: 2000;
+
+            inset: 0;
+
+            background: rgba(0,0,0,.75);
+
+            justify-content: center;
+
+            align-items: center;
+        }
+
+
+        .pin-box {
+            width: 320px;
+
+            padding: 30px;
+
+            background: white;
+
+            border-radius: 20px;
+
+            text-align: center;
+        }
+
+
+        .pin-box h2 {
+            margin-bottom: 10px;
+        }
+
+
+        .pin-box p {
+            color: #777;
+
+            margin-bottom: 20px;
+        }
+
+
+        .pin-input {
+            width: 100%;
+
+            padding: 12px;
+
+            border: 1px solid #ccc;
+
+            border-radius: 10px;
+
+            outline: none;
+
+            text-align: center;
+
+            font-size: 20px;
+
+            margin-bottom: 15px;
+        }
+
+
+        .pin-submit {
+            border: none;
+
+            background: #222;
+
+            color: white;
+
+            padding: 11px 22px;
+
+            border-radius: 25px;
+
+            cursor: pointer;
+        }
+
+
+        .private-folder {
+            display: none;
+
+            width: 90%;
+
+            max-width: 1200px;
+
+            margin: 45px auto;
+        }
+
+
+        .private-folder h2 {
+            text-align: center;
+
+            margin-bottom: 25px;
+        }
+
+
+        .private-gallery {
+            display: grid;
+
+            grid-template-columns:
+                repeat(3, 1fr);
+
+            gap: 20px;
+        }
+
+
+        .private-gallery img {
+            width: 100%;
+
+            height: 250px;
+
+            object-fit: cover;
+
+            border-radius: 15px;
+        }
+
+
+        body.dark {
+            background: #121212;
+
+            color: white;
+        }
+
+
+        body.dark header p {
+            color: #aaa;
+        }
+
+
+        body.dark .filter-btn {
+            background: #222;
+
+            color: white;
+        }
+
+
+        body.dark .filter-btn.active {
+            background: white;
+
+            color: black;
+        }
+
+
+        body.dark .search {
+            background: #222;
+
+            color: white;
+
+            border-color: #555;
+        }
+
+
+        body.dark .gallery-item {
+            background: #1e1e1e;
+        }
+
+
+
+        .uploaded-photo {
+            animation: added .45s ease;
+        }
+
+
+        @keyframes added {
+
+            from {
+                opacity: 0;
+
+                transform: scale(.85);
+            }
+
+            to {
+                opacity: 1;
+
+                transform: scale(1);
+            }
+
+        }
+
+
+        @media (max-width: 1000px) {
+
+            .gallery {
+                grid-template-columns:
+                    repeat(3, 1fr);
+            }
+
+        }
+
+
+        @media (max-width: 750px) {
+
+            .gallery {
+                grid-template-columns:
+                    repeat(2, 1fr);
+            }
+
+            .top-section {
+                flex-direction: column;
+            }
+
+            .search {
+                width: 100%;
+            }
+
+            .dark-btn {
+                width: 100%;
+            }
+
+        }
+
+
+        @media (max-width: 500px) {
+
+            header h1 {
+                font-size: 28px;
+            }
+
+            .gallery {
+                grid-template-columns: 1fr;
+            }
+
+            .private-gallery {
+                grid-template-columns: 1fr;
+            }
+
+            #lightbox-img {
+                max-width: 90%;
+                max-height: 55%;
+            }
+
+            .prev {
+                left: 8px;
+            }
+
+            .next {
+                right: 8px;
+            }
+
+            .memory {
+                bottom: 15px;
+            }
+
+            .memory h2 {
+                font-size: 18px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+    <header>
+
+        <h1>📸 My Memory Gallery</h1>
+
+        <p>
+            Every picture has a story ❤️
+        </p>
+
+    </header>
+
+
+
+    <div class="top-section">
+
+        <input
+            type="text"
+            id="search"
+            class="search"
+            placeholder="🔍 Search photos..."
+        >
+
+
+        <button
+            class="dark-btn"
+            onclick="toggleDarkMode()">
+
+            🌙 Dark Mode
+
+        </button>
+
+    </div>
+
+
+    <div class="categories">
+
+        <button
+            class="filter-btn active"
+            onclick="filterImages('all', this)">
+            All
+        </button>
+
+        <button
+            class="filter-btn"
+            onclick="filterImages('nature', this)">
+            🌿 Nature
+        </button>
+
+        <button
+            class="filter-btn"
+            onclick="filterImages('animals', this)">
+            🐾 Animals
+        </button>
+
+        <button
+            class="filter-btn"
+            onclick="filterImages('travel', this)">
+            ✈️ Travel
+        </button>
+
+        <button
+            class="filter-btn"
+            onclick="filterImages('city', this)">
+            🏙️ City
+        </button>
+
+        <button
+            class="filter-btn"
+            onclick="filterImages('me', this)">
+            👩 Me
+        </button>
+
+        <button
+            class="filter-btn"
+            onclick="filterImages('friends', this)">
+            👭 Friends
+        </button>
+
+        <button
+            class="filter-btn"
+            onclick="showFavorites(this)">
+            ❤️ Favourite
+        </button>
+
+        <button
+            class="filter-btn"
+            onclick="openPrivateFolder()">
+            🔐 Private
+        </button>
+
+    </div>
+
+
+    <div class="extra-buttons">
+
+        <!-- Hidden upload input -->
+
+        <input
+            type="file"
+            id="photoUpload"
+            accept="image/*"
+            multiple
+            hidden
+        >
+
+
+        <button
+            class="extra-btn"
+            onclick="
+                document
+                .getElementById('photoUpload')
+                .click()
+            ">
+            📤 Add Photos
+        </button>
+
+
+        <button
+            class="extra-btn"
+            onclick="surpriseMe()">
+            🎲 Surprise Me
+        </button>
+
+
+        <button
+            class="extra-btn"
+            onclick="startSlideshow()">
+            ▶️ Slideshow
+        </button>
+
+
+        <button
+            class="extra-btn"
+            onclick="showAll()">
+            🔄 Show All
+        </button>
+
+    </div>
+
+
+    <main
+        class="gallery"
+        id="gallery">
+
+
+        <!-- NATURE -->1
+
+        <div
+            class="gallery-item nature"
+            data-title="Nature">
+
+            <button
+                class="favorite"
+                onclick="toggleFavorite(event,0)">
+                ♡
+            </button>
+
+
+            <img
+                src="https://images.unsplash.com/photo-1500534623283-312aade485b7"
+                alt="Nature"
+                onclick="openLightbox(0)"
+            >
+
+
+            <div class="image-title">
+
+                🌿 Beautiful Nature
+
+                <small>
+                    📅 15 August 2026
+                    &nbsp;
+                    🕐 05:42 PM
+                </small>
+
+            </div>
+
+        </div>
+
+        <div
+            class="gallery-item nature"
+            data-title="Nature">
+
+            <button
+                class="favorite"
+                onclick="toggleFavorite(event,0)">
+                ♡
+            </button>
+
+
+            <img
+                src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR7CBJorho6YGePkRtqPY5gj9l2RwFyfdqGTNlddvpwwLiN5b6RyrkbjMJo&s=10"
+                alt="Nature"
+                onclick="openLightbox(0)"
+            >
+
+
+            <div class="image-title">
+
+                🌿 Beautiful Nature
+
+                <small>
+                    📅 15 August 2026
+                    &nbsp;
+                    🕐 05:42 PM
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <!-- ANIMAL -->
+
+        <div
+            class="gallery-item animals"
+            data-title="Animal">
+
+            <button
+                class="favorite"
+                onclick="toggleFavorite(event,1)">
+                ♡
+            </button>
+
+
+            <img
+                src="https://images.unsplash.com/photo-1552053831-71594a27632d"
+                alt="Dog"
+                onclick="openLightbox(1)"
+            >
+
+
+            <div class="image-title">
+
+                🐾 Cute Friend
+
+                <small>
+                    📅 20 August 2026
+                    &nbsp;
+                    🕐 10:15 AM
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <!-- TRAVEL -->
+
+        <div
+            class="gallery-item travel"
+            data-title="Beach">
+
+            <button
+                class="favorite"
+                onclick="toggleFavorite(event,2)">
+                ♡
+            </button>
+
+
+            <img
+                src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e"
+                alt="Beach"
+                onclick="openLightbox(2)"
+            >
+
+
+            <div class="image-title">
+
+                ✈️ Beach Memory
+
+                <small>
+                    📅 22 August 2026
+                    &nbsp;
+                    🕐 04:30 PM
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <!-- CITY -->
+
+        <div
+            class="gallery-item city"
+            data-title="City">
+
+            <button
+                class="favorite"
+                onclick="toggleFavorite(event,3)">
+                ♡
+            </button>
+
+
+            <img
+                src="https://images.unsplash.com/photo-1477959858617-67f85cf4f1df"
+                alt="City"
+                onclick="openLightbox(3)"
+            >
+
+
+            <div class="image-title">
+
+                🏙️ City Life
+
+                <small>
+                    📅 25 August 2026
+                    &nbsp;
+                    🕐 07:20 PM
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <!-- FOREST -->
+
+        <div
+            class="gallery-item nature"
+            data-title="Forest">
+
+            <button
+                class="favorite"
+                onclick="toggleFavorite(event,4)">
+                ♡
+            </button>
+
+
+            <img
+                src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e"
+                alt="Forest"
+                onclick="openLightbox(4)"
+            >
+
+
+            <div class="image-title">
+
+                🌲 Green Forest
+
+                <small>
+                    📅 28 August 2026
+                    &nbsp;
+                    🕐 08:10 AM
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <!-- DOG -->
+
+        <div
+            class="gallery-item animals"
+            data-title="Dog">
+
+            <button
+                class="favorite"
+                onclick="toggleFavorite(event,5)">
+                ♡
+            </button>
+
+
+            <img
+                src="https://images.unsplash.com/photo-1543466835-00a7907e9de1"
+                alt="Dog"
+                onclick="openLightbox(5)"
+            >
+
+
+            <div class="image-title">
+
+                🐶 Happy Moment
+
+                <small>
+                    📅 30 August 2026
+                    &nbsp;
+                    🕐 01:45 PM
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <!-- MOUNTAIN -->
+
+        <div
+            class="gallery-item travel"
+            data-title="Mountain">
+
+            <button
+                class="favorite"
+                onclick="toggleFavorite(event,6)">
+                ♡
+            </button>
+
+
+            <img
+                src="https://images.unsplash.com/photo-1469474968028-56623f02e42e"
+                alt="Mountain"
+                onclick="openLightbox(6)"
+            >
+
+
+            <div class="image-title">
+
+                ⛰️ Mountain Journey
+
+                <small>
+                    📅 01 September 2026
+                    &nbsp;
+                    🕐 06:25 AM
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <!-- STREET -->
+
+        <div
+            class="gallery-item city"
+            data-title="Street">
+
+            <button
+                class="favorite"
+                onclick="toggleFavorite(event,7)">
+                ♡
+            </button>
+
+
+            <img
+                src="https://images.unsplash.com/photo-1449824913935-59a10b8d2000"
+                alt="Street"
+                onclick="openLightbox(7)"
+            >
+
+
+            <div class="image-title">
+
+                🌆 City Street
+
+                <small>
+                    📅 03 September 2026
+                    &nbsp;
+                    🕐 09:40 PM
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <!-- ME -->
+
+        <div
+            class="gallery-item me"
+            data-title="Me">
+
+            <button
+                class="favorite"
+                onclick="toggleFavorite(event,8)">
+                ♡
+            </button>
+
+
+            <img
+                src="https://images.unsplash.com/photo-1488426862026-3ee34a7d66df"
+                alt="Me"
+                onclick="openLightbox(8)"
+            >
+
+
+            <div class="image-title">
+
+                👩 Just Me
+
+                <small>
+                    📅 05 September 2026
+                    &nbsp;
+                    🕐 11:30 AM
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <!-- FRIENDS -->
+
+        <div
+            class="gallery-item friends"
+            data-title="Friends">
+
+            <button
+                class="favorite"
+                onclick="toggleFavorite(event,9)">
+                ♡
+            </button>
+
+
+            <img
+                src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac"
+                alt="Friends"
+                onclick="openLightbox(9)"
+            >
+
+
+            <div class="image-title">
+
+                👭 Friends Forever
+
+                <small>
+                    📅 10 September 2026
+                    &nbsp;
+                    🕐 06:15 PM
+                </small>
+
+            </div>
+
+        </div>
+
+    </main>
+
+
+    <!-- ================= PRIVATE FOLDER ================= -->
+
+    <section
+        class="private-folder"
+        id="privateFolder">
+
+        <h2>
+            🔐 My Private Memories
+        </h2>
+
+
+        <div class="private-gallery">
+
+            <img
+                src="https://images.unsplash.com/photo-1511632765486-a01980e01a18"
+                alt="Private Memory"
+            >
+
+            <img
+                src="https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e"
+                alt="Private Memory"
+            >
+
+            <img
+                src="https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91"
+                alt="Private Memory"
+            >
+
+        </div>
+
+    </section>
+
+
+    <!-- ================= LIGHTBOX ================= -->
+
+    <div
+        id="lightbox"
+        class="lightbox">
+
+
+        <span
+            class="close"
+            onclick="closeLightbox()">
+            &times;
+        </span>
+
+
+        <button
+            class="prev"
+            onclick="changeImage(-1)">
+            &#10094;
+        </button>
+
+
+        <img
+            id="lightbox-img"
+            src=""
+            alt="Large Photo"
+        >
+
+
+        <button
+            class="next"
+            onclick="changeImage(1)">
+            &#10095;
+        </button>
+
+
+        <div class="memory">
+
+            <h2 id="memoryTitle">
+                ✨ A Beautiful Memory
+            </h2>
+
+
+            <p id="memoryText">
+                Some moments are not just captured,
+                they are remembered forever. ❤️
+            </p>
+
+
+            <div class="photo-date">
+
+                📅
+                <span id="memoryDate">
+                </span>
+
+                &nbsp;&nbsp;
+
+                🕐
+                <span id="memoryTime">
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= PIN MODAL ================= -->
+
+    <div
+        id="pinModal"
+        class="pin-modal">
+
+
+        <div class="pin-box">
+
+            <h2>
+                🔐 Private Folder
+            </h2>
+
+
+            <p>
+                Enter your 4-digit PIN
+            </p>
+
+
+            <input
+                type="password"
+                id="pinInput"
+                class="pin-input"
+                maxlength="4"
+                inputmode="numeric"
+                placeholder="••••"
+            >
+
+
+            <button
+                class="pin-submit"
+                onclick="checkPIN()">
+
+                Unlock
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= JAVASCRIPT ================= -->
+
+    <script>
+
+
+        /* ============================================
+           ORIGINAL IMAGE DATA
+        ============================================ */
+
+        const images = [
+
+            {
+                url:
+                "https://images.unsplash.com/photo-1500534623283-312aade485b7",
+
+                title:
+                "🌿 Beautiful Nature",
+
+                text:
+                "A peaceful moment with nature.",
+
+                date:
+                "15 August 2026",
+
+                time:
+                "05:42 PM"
+            },
+
+
+            {
+                url:
+                "https://images.unsplash.com/photo-1552053831-71594a27632d",
+
+                title:
+                "🐾 Cute Friend",
+
+                text:
+                "A little friend who brings happiness.",
+
+                date:
+                "20 August 2026",
+
+                time:
+                "10:15 AM"
+            },
+
+
+            {
+                url:
+                "https://images.unsplash.com/photo-1507525428034-b723cf961d3e",
+
+                title:
+                "✈️ Beach Memory",
+
+                text:
+                "The sound of waves and a beautiful memory.",
+
+                date:
+                "22 August 2026",
+
+                time:
+                "04:30 PM"
+            },
+
+
+            {
+                url:
+                "https://images.unsplash.com/photo-1477959858617-67f85cf4f1df",
+
+                title:
+                "🏙️ City Life",
+
+                text:
+                "Every city has a different story.",
+
+                date:
+                "25 August 2026",
+
+                time:
+                "07:20 PM"
+            },
+
+
+            {
+                url:
+                "https://images.unsplash.com/photo-1441974231531-c6227db76b6e",
+
+                title:
+                "🌲 Green Forest",
+
+                text:
+                "Peace is sometimes found in silence.",
+
+                date:
+                "28 August 2026",
+
+                time:
+                "08:10 AM"
+            },
+
+
+            {
+                url:
+                "https://images.unsplash.com/photo-1543466835-00a7907e9de1",
+
+                title:
+                "🐶 Happy Moment",
+
+                text:
+                "Happiness can have four paws.",
+
+                date:
+                "30 August 2026",
+
+                time:
+                "01:45 PM"
+            },
+
+
+            {
+                url:
+                "https://images.unsplash.com/photo-1469474968028-56623f02e42e",
+
+                title:
+                "⛰️ Mountain Journey",
+
+                text:
+                "Sometimes the journey is the best part.",
+
+                date:
+                "01 September 2026",
+
+                time:
+                "06:25 AM"
+            },
+
+
+            {
+                url:
+                "https://images.unsplash.com/photo-1449824913935-59a10b8d2000",
+
+                title:
+                "🌆 City Street",
+
+                text:
+                "Every street has a story.",
+
+                date:
+                "03 September 2026",
+
+                time:
+                "09:40 PM"
+            },
+
+
+            {
+                url:
+                "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df",
+
+                title:
+                "👩 Just Me",
+
+                text:
+                "A little moment that belongs to me.",
+
+                date:
+                "05 September 2026",
+
+                time:
+                "11:30 AM"
+            },
+
+
+            {
+                url:
+                "https://images.unsplash.com/photo-1529156069898-49953e39b3ac",
+
+                title:
+                "👭 Friends Forever",
+
+                text:
+                "Good friends make unforgettable memories.",
+
+                date:
+                "10 September 2026",
+
+                time:
+                "06:15 PM"
+            }
+
+        ];
+
+
+        /* ============================================
+           VARIABLES
+        ============================================ */
+
+        let currentIndex = 0;
+
+        let slideTimer = null;
+
+
+        let favorites =
+            JSON.parse(
+                localStorage.getItem(
+                    "favorites"
+                )
+            ) || [];
+
+
+        /* ============================================
+           LIGHTBOX
+        ============================================ */
+
+        function openLightbox(index) {
+
+            currentIndex = index;
+
+
+            document
+                .getElementById("lightbox-img")
+                .src =
+                images[index].url;
+
+
+            document
+                .getElementById("memoryTitle")
+                .innerText =
+                images[index].title;
+
+
+            document
+                .getElementById("memoryText")
+                .innerText =
+                images[index].text;
+
+
+            document
+                .getElementById("memoryDate")
+                .innerText =
+                images[index].date;
+
+
+            document
+                .getElementById("memoryTime")
+                .innerText =
+                images[index].time;
+
+
+            document
+                .getElementById("lightbox")
+                .style.display =
+                "flex";
+
+        }
+
+
+        function closeLightbox() {
+
+            document
+                .getElementById("lightbox")
+                .style.display =
+                "none";
+
+        }
+
+
+        function changeImage(direction) {
+
+            currentIndex += direction;
+
+
+            if (
+                currentIndex >=
+                images.length
+            ) {
+
+                currentIndex = 0;
+
+            }
+
+
+            if (
+                currentIndex < 0
+            ) {
+
+                currentIndex =
+                    images.length - 1;
+
+            }
+
+
+            openLightbox(
+                currentIndex
+            );
+
+        }
+
+
+        /* ============================================
+           FILTER
+        ============================================ */
+
+        function filterImages(
+            category,
+            button
+        ) {
+
+            document
+                .querySelectorAll(
+                    ".gallery-item"
+                )
+                .forEach(function(item) {
+
+                    if (
+                        category === "all" ||
+                        item.classList.contains(
+                            category
+                        )
+                    ) {
+
+                        item.style.display =
+                            "block";
+
+                    } else {
+
+                        item.style.display =
+                            "none";
+
+                    }
+
+                });
+
+
+            document
+                .querySelectorAll(
+                    ".filter-btn"
+                )
+                .forEach(function(btn) {
+
+                    btn.classList.remove(
+                        "active"
+                    );
+
+                });
+
+
+            button.classList.add(
+                "active"
+            );
+
+
+            document
+                .getElementById(
+                    "privateFolder"
+                )
+                .style.display =
+                "none";
+
+        }
+
+
+        /* ============================================
+           SEARCH
+        ============================================ */
+
+        document
+            .getElementById("search")
+            .addEventListener(
+                "input",
+                function() {
+
+                    const value =
+                        this.value
+                        .toLowerCase()
+                        .trim();
+
+
+                    document
+                        .querySelectorAll(
+                            ".gallery-item"
+                        )
+                        .forEach(
+                            function(item) {
+
+                                const title =
+                                    item
+                                    .dataset
+                                    .title
+                                    .toLowerCase();
+
+
+                                if (
+                                    title.includes(
+                                        value
+                                    )
+                                ) {
+
+                                    item.style.display =
+                                        "block";
+
+                                } else {
+
+                                    item.style.display =
+                                        "none";
+
+                                }
+
+                            }
+                        );
+
+                }
+            );
+
+
+        /* ============================================
+           FAVOURITE
+        ============================================ */
+
+        function toggleFavorite(
+            event,
+            index
+        ) {
+
+            event.stopPropagation();
+
+
+            const button =
+                event.currentTarget;
+
+
+            if (
+                favorites.includes(index)
+            ) {
+
+                favorites =
+                    favorites.filter(
+                        function(item) {
+
+                            return item !== index;
+
+                        }
+                    );
+
+
+                button.innerText = "♡";
+
+                button.classList.remove(
+                    "active"
+                );
+
+            } else {
+
+                favorites.push(index);
+
+                button.innerText = "♥";
+
+                button.classList.add(
+                    "active"
+                );
+
+            }
+
+
+            localStorage.setItem(
+                "favorites",
+                JSON.stringify(
+                    favorites
+                )
+            );
+
+        }
+
+
+        function showFavorites(button) {
+
+            document
+                .querySelectorAll(
+                    ".gallery-item"
+                )
+                .forEach(
+                    function(item, index) {
+
+                        const favoriteButton =
+                            item.querySelector(
+                                ".favorite"
+                            );
+
+
+                        if (
+                            favoriteButton
+                        ) {
+
+                            const onclick =
+                                favoriteButton
+                                .getAttribute(
+                                    "onclick"
+                                );
+
+
+                            const match =
+                                onclick.match(
+                                    /,\s*(\d+)/
+                                );
+
+
+                            const photoIndex =
+                                match
+                                    ? Number(
+                                        match[1]
+                                    )
+                                    : -1;
+
+
+                            item.style.display =
+                                favorites.includes(
+                                    photoIndex
+                                )
+                                    ? "block"
+                                    : "none";
+
+                        }
+
+                    }
+                );
+
+
+            document
+                .querySelectorAll(
+                    ".filter-btn"
+                )
+                .forEach(
+                    function(btn) {
+
+                        btn.classList.remove(
+                            "active"
+                        );
+
+                    }
+                );
+
+
+            button.classList.add(
+                "active"
+            );
+
+        }
+
+
+        /* ============================================
+           DARK MODE
+        ============================================ */
+
+        function toggleDarkMode() {
+
+            document
+                .body
+                .classList
+                .toggle("dark");
+
+        }
+
+
+        /* ============================================
+           SHOW ALL
+        ============================================ */
+
+        function showAll() {
+
+            document
+                .querySelectorAll(
+                    ".gallery-item"
+                )
+                .forEach(
+                    function(item) {
+
+                        item.style.display =
+                            "block";
+
+                    }
+                );
+
+
+            document
+                .getElementById(
+                    "search"
+                )
+                .value = "";
+
+
+            document
+                .querySelectorAll(
+                    ".filter-btn"
+                )
+                .forEach(
+                    function(btn) {
+
+                        btn.classList.remove(
+                            "active"
+                        );
+
+                    }
+                );
+
+
+            document
+                .querySelector(
+                    ".filter-btn"
+                )
+                .classList.add(
+                    "active"
+                );
+
+
+            document
+                .getElementById(
+                    "privateFolder"
+                )
+                .style.display =
+                "none";
+
+        }
+
+
+        /* ============================================
+           SURPRISE ME
+        ============================================ */
+
+        function surpriseMe() {
+
+            const randomIndex =
+                Math.floor(
+                    Math.random() *
+                    images.length
+                );
+
+
+            openLightbox(
+                randomIndex
+            );
+
+        }
+
+
+        /* ============================================
+           SLIDESHOW
+        ============================================ */
+
+        function startSlideshow() {
+
+            openLightbox(0);
+
+
+            clearInterval(
+                slideTimer
+            );
+
+
+            slideTimer =
+                setInterval(
+                    function() {
+
+                        changeImage(1);
+
+                    },
+                    3000
+                );
+
+        }
+
+
+        /* ============================================
+           PRIVATE FOLDER
+        ============================================ */
+
+        function openPrivateFolder() {
+
+            document
+                .getElementById(
+                    "pinModal"
+                )
+                .style.display =
+                "flex";
+
+
+            document
+                .getElementById(
+                    "pinInput"
+                )
+                .value = "";
+
+
+            setTimeout(
+                function() {
+
+                    document
+                        .getElementById(
+                            "pinInput"
+                        )
+                        .focus();
+
+                },
+                100
+            );
+
+        }
+
+
+        function checkPIN() {
+
+            const pin =
+                document
+                .getElementById(
+                    "pinInput"
+                )
+                .value;
+
+
+            if (
+                pin === "2026"
+            ) {
+
+                document
+                    .getElementById(
+                        "pinModal"
+                    )
+                    .style.display =
+                    "none";
+
+
+                document
+                    .getElementById(
+                        "privateFolder"
+                    )
+                    .style.display =
+                    "block";
+
+
+                document
+                    .getElementById(
+                        "privateFolder"
+                    )
+                    .scrollIntoView({
+                        behavior:
+                            "smooth"
+                    });
+
+            } else {
+
+                alert(
+                    "❌ Wrong PIN!"
+                );
+
+            }
+
+        }
+
+
+        /* ============================================
+           ENTER KEY FOR PIN
+        ============================================ */
+
+        document
+            .getElementById(
+                "pinInput"
+            )
+            .addEventListener(
+                "keydown",
+                function(event) {
+
+                    if (
+                        event.key ===
+                        "Enter"
+                    ) {
+
+                        checkPIN();
+
+                    }
+
+                }
+            );
+
+
+        /* ============================================
+           UPLOAD PHOTOS
+        ============================================ */
+
+        document
+            .getElementById(
+                "photoUpload"
+            )
+            .addEventListener(
+                "change",
+                function() {
+
+                    const files =
+                        Array.from(
+                            this.files
+                        );
+
+
+                    files.forEach(
+                        function(file) {
+
+                            if (
+                                !file.type
+                                .startsWith(
+                                    "image/"
+                                )
+                            ) {
+
+                                return;
+
+                            }
+
+
+                            const reader =
+                                new FileReader();
+
+
+                            reader.onload =
+                                function(event) {
+
+                                    const imageURL =
+                                        event.target
+                                        .result;
+
+
+                                    readEXIF(
+                                        file,
+                                        imageURL
+                                    );
+
+                                };
+
+
+                            reader.readAsDataURL(
+                                file
+                            );
+
+                        }
+                    );
+
+
+                    this.value = "";
+
+                }
+            );
+
+
+        /* ============================================
+           READ EXIF
+        ============================================ */
+
+        function readEXIF(
+            file,
+            imageURL
+        ) {
+
+            EXIF.getData(
+                file,
+                function() {
+
+                    let dateTaken =
+                        EXIF.getTag(
+                            this,
+                            "DateTimeOriginal"
+                        );
+
+
+                    if (
+                        !dateTaken
+                    ) {
+
+                        dateTaken =
+                            EXIF.getTag(
+                                this,
+                                "DateTime"
+                            );
+
+                    }
+
+
+                    let date =
+                        "Date not available";
+
+
+                    let time =
+                        "Time not available";
+
+
+                    if (
+                        dateTaken
+                    ) {
+
+                        const parts =
+                            dateTaken
+                            .split(" ");
+
+
+                        if (
+                            parts.length >=
+                            2
+                        ) {
+
+                            const dateParts =
+                                parts[0]
+                                .split(":");
+
+
+                            if (
+                                dateParts.length
+                                === 3
+                            ) {
+
+                                date =
+                                    dateParts[2] +
+                                    " " +
+                                    getMonthName(
+                                        Number(
+                                            dateParts[1]
+                                        )
+                                    ) +
+                                    " " +
+                                    dateParts[0];
+
+                            }
+
+
+                            time =
+                                convertTo12Hour(
+                                    parts[1]
+                                );
+
+                        }
+
+                    }
+
+
+                    addUploadedPhoto(
+                        imageURL,
+                        file.name,
+                        date,
+                        time
+                    );
+
+                }
+            );
+
+        }
+
+
+        /* ============================================
+           MONTH
+        ============================================ */
+
+        function getMonthName(
+            month
+        ) {
+
+            const months = [
+
+                "January",
+                "February",
+                "March",
+                "April",
+                "May",
+                "June",
+                "July",
+                "August",
+                "September",
+                "October",
+                "November",
+                "December"
+
+            ];
+
+
+            return (
+                months[month - 1]
+                || ""
+            );
+
+        }
+
+
+        /* ============================================
+           TIME FORMAT
+        ============================================ */
+
+        function convertTo12Hour(
+            time
+        ) {
+
+            const parts =
+                time.split(":");
+
+
+            let hour =
+                Number(parts[0]);
+
+
+            const minute =
+                parts[1] || "00";
+
+
+            const second =
+                parts[2] || "00";
+
+
+            const ampm =
+                hour >= 12
+                    ? "PM"
+                    : "AM";
+
+
+            hour =
+                hour % 12 || 12;
+
+
+            return (
+                hour +
+                ":" +
+                minute +
+                ":" +
+                second +
+                " " +
+                ampm
+            );
+
+        }
+
+
+        /* ============================================
+           ADD UPLOADED PHOTO
+        ============================================ */
+
+        function addUploadedPhoto(
+            imageURL,
+            fileName,
+            date,
+            time
+        ) {
+
+            const gallery =
+                document.getElementById(
+                    "gallery"
+                );
+
+
+            const item =
+                document.createElement(
+                    "div"
+                );
+
+
+            item.className =
+                "gallery-item uploaded-photo";
+
+
+            item.dataset.title =
+                fileName;
+
+
+            item.innerHTML = `
+
+                <button
+                    class="favorite"
+                    onclick="toggleUploadedFavorite(event,this)">
+                    ♡
+                </button>
+
+                <img
+                    src="${imageURL}"
+                    alt="${fileName}">
+
+                <div class="image-title">
+
+                    📷 ${escapeHTML(fileName)}
+
+                    <small>
+
+                        📅 ${date}
+
+                        &nbsp;&nbsp;
+
+                        🕐 ${time}
+
+                    </small>
+
+                </div>
+
+            `;
+
+
+            const img =
+                item.querySelector(
+                    "img"
+                );
+
+
+            img.addEventListener(
+                "click",
+                function() {
+
+                    openUploadedLightbox(
+                        imageURL,
+                        fileName,
+                        date,
+                        time
+                    );
+
+                }
+            );
+
+
+            gallery.appendChild(
+                item
+            );
+
+        }
+
+
+        /* ============================================
+           SAFE FILE NAME
+        ============================================ */
+
+        function escapeHTML(
+            text
+        ) {
+
+            return text
+                .replace(
+                    /&/g,
+                    "&amp;"
+                )
+                .replace(
+                    /</g,
+                    "&lt;"
+                )
+                .replace(
+                    />/g,
+                    "&gt;"
+                )
+                .replace(
+                    /"/g,
+                    "&quot;"
+                )
+                .replace(
+                    /'/g,
+                    "&#039;"
+                );
+
+        }
+
+
+        /* ============================================
+           UPLOADED PHOTO LIGHTBOX
+        ============================================ */
+
+        function openUploadedLightbox(
+            imageURL,
+            fileName,
+            date,
+            time
+        ) {
+
+            document
+                .getElementById(
+                    "lightbox-img"
+                )
+                .src =
+                imageURL;
+
+
+            document
+                .getElementById(
+                    "memoryTitle"
+                )
+                .innerText =
+                "📷 " +
+                fileName;
+
+
+            document
+                .getElementById(
+                    "memoryText"
+                )
+                .innerText =
+                "This photo was added to your memory gallery.";
+
+
+            document
+                .getElementById(
+                    "memoryDate"
+                )
+                .innerText =
+                date;
+
+
+            document
+                .getElementById(
+                    "memoryTime"
+                )
+                .innerText =
+                time;
+
+
+            document
+                .getElementById(
+                    "lightbox"
+                )
+                .style.display =
+                "flex";
+
+        }
+
+
+        /* ============================================
+           UPLOADED FAVOURITE
+        ============================================ */
+
+        function toggleUploadedFavorite(
+            event,
+            button
+        ) {
+
+            event.stopPropagation();
+
+
+            if (
+                button.innerText === "♡"
+            ) {
+
+                button.innerText =
+                    "♥";
+
+                button.classList.add(
+                    "active"
+                );
+
+            } else {
+
+                button.innerText =
+                    "♡";
+
+                button.classList.remove(
+                    "active"
+                );
+
+            }
+
+        }
+
+
+        /* ============================================
+           KEYBOARD CONTROLS
+        ============================================ */
+
+        document.addEventListener(
+            "keydown",
+            function(event) {
+
+                const lightbox =
+                    document.getElementById(
+                        "lightbox"
+                    );
+
+
+                if (
+                    lightbox.style.display
+                    === "flex"
+                ) {
+
+                    if (
+                        event.key ===
+                        "ArrowRight"
+                    ) {
+
+                        changeImage(1);
+
+                    }
+
+
+                    if (
+                        event.key ===
+                        "ArrowLeft"
+                    ) {
+
+                        changeImage(-1);
+
+                    }
+
+
+                    if (
+                        event.key ===
+                        "Escape"
+                    ) {
+
+                        closeLightbox();
+
+                    }
+
+                }
+
+            }
+        );
+
+
+        /* ============================================
+           CLICK OUTSIDE LIGHTBOX
+        ============================================ */
+
+        document
+            .getElementById(
+                "lightbox"
+            )
+            .addEventListener(
+                "click",
+                function(event) {
+
+                    if (
+                        event.target ===
+                        this
+                    ) {
+
+                        closeLightbox();
+
+                    }
+
+                }
+            );
+
+
+    </script>
+
+</body>
+
+</html>
